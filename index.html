@@ -2,117 +2,435 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Story Generator Demo</title>
+  <title>AI Story Generator</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    body {
-      font-family: system-ui, sans-serif;
-      background: #f6f6fa;
-      padding: 0;
+    * {
       margin: 0;
-    }
-    .container {
-      max-width: 420px;
-      margin: 40px auto;
-      background: #fff;
-      padding: 2rem 2.5rem 2.5rem 2.5rem;
-      border-radius: 16px;
-      box-shadow: 0 4px 24px #0002;
-    }
-    h1 { font-size: 1.5rem; margin-bottom: 0.8rem; }
-    textarea, input, button {
-      font-size: 1rem;
-      width: 100%;
+      padding: 0;
       box-sizing: border-box;
-      margin-bottom: 1rem;
     }
-    textarea { min-height: 3rem; resize: vertical; }
-    button {
-      padding: 0.5rem;
-      background: #2076d0;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 500;
-      transition: background 0.15s;
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
     }
-    button:active { background: #12529c; }
-    .output {
-      margin-top: 1.5rem;
-      padding: 1rem;
-      background: #f3f7fc;
-      border-radius: 10px;
-      min-height: 2rem;
-      white-space: pre-line;
+    
+    /* Animated background particles */
+    .bg-particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
     }
-    .gen-block {
-      margin-bottom: 1.2em;
-      border-left: 4px solid #2076d0;
-      padding-left: 0.8em;
-      background: #f8fbff;
-      border-radius: 4px;
+    
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      animation: float 6s ease-in-out infinite;
     }
-    .footer {
-      font-size: 0.97rem;
-      color: #888;
-      margin-top: 2em;
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(180deg); }
+    }
+    
+    .container {
+      max-width: 520px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 3rem 2.5rem;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      position: relative;
+      z-index: 1;
+      transform: translateY(20px);
+      animation: slideUp 0.8s ease-out forwards;
+    }
+    
+    @keyframes slideUp {
+      to {
+        transform: translateY(0);
+      }
+    }
+    
+    .header {
       text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+    
+    .subtitle {
+      color: #6b7280;
+      font-size: 1.1rem;
+      font-weight: 400;
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+    
+    label {
+      display: block;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    textarea, input {
+      width: 100%;
+      padding: 1rem 1.25rem;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px);
+    }
+    
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+      font-family: inherit;
+      line-height: 1.6;
+    }
+    
+    textarea:focus, input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      transform: translateY(-2px);
+    }
+    
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .control-item {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .generate-btn {
+      width: 100%;
+      padding: 1.25rem 2rem;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 2rem;
+    }
+    
+    .generate-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+    
+    .generate-btn:hover::before {
+      left: 100%;
+    }
+    
+    .generate-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    }
+    
+    .generate-btn:active {
+      transform: translateY(0);
+    }
+    
+    .generate-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .output {
+      background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+      border-radius: 16px;
+      padding: 1.5rem;
+      min-height: 100px;
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6b7280;
+      font-size: 1.1rem;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .gen-block {
+      margin-bottom: 1.5rem;
+      padding: 1.25rem;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 12px;
+      border-left: 4px solid #667eea;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      animation: fadeInUp 0.6s ease-out;
+      position: relative;
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .gen-block::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      border-radius: 12px 12px 0 0;
+    }
+    
+    .gen-title {
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 0.75rem;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .gen-text {
+      color: #4b5563;
+      line-height: 1.7;
+      font-size: 1rem;
+    }
+    
+    .footer {
+      text-align: center;
+      margin-top: 3rem;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    
+    .error {
+      color: #dc2626;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      padding: 1rem;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+    
+    .placeholder-text {
+      color: #9ca3af;
+      font-style: italic;
+      text-align: center;
+      padding: 2rem;
+      font-size: 1.1rem;
+    }
+    
+    /* Responsive design */
+    @media (max-width: 640px) {
+      .container {
+        margin: 10px;
+        padding: 2rem 1.5rem;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+      
+      .controls-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* Input number styling */
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+    
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
     }
   </style>
 </head>
 <body>
+  <div class="bg-particles" id="particles"></div>
+  
   <div class="container">
-    <h1>Story Generator</h1>
-    <label for="prompt">Prompt:</label>
-    <textarea id="prompt" placeholder="Enter your story prompt...">Once upon a time</textarea>
-
-    <label for="max_length">Max Length:</label>
-    <input type="number" id="max_length" value="50" min="1" max="2048">
-
-    <label for="num_return_sequences">Number of Generations:</label>
-    <input type="number" id="num_return_sequences" value="2" min="1" max="5">
-
-    <label for="temperature">Temperature:</label>
-    <input type="number" id="temperature" step="0.01" value="0.7" min="0.1" max="1.5">
-
-    <button id="generateBtn">Generate</button>
-
-    <div class="output" id="output">Model generations will appear here...</div>
+    <div class="header">
+      <h1>AI Story Generator</h1>
+      <p class="subtitle">Create compelling narratives with artificial intelligence</p>
+    </div>
+    
+    <div class="form-group">
+      <label for="prompt">Story Prompt</label>
+      <textarea id="prompt" placeholder="Enter your creative prompt... (e.g., 'In a world where dreams become reality...')">Once upon a time</textarea>
+    </div>
+    
+    <div class="controls-grid">
+      <div class="control-item">
+        <label for="max_length">Max Length</label>
+        <input type="number" id="max_length" value="50" min="1" max="2048">
+      </div>
+      
+      <div class="control-item">
+        <label for="num_return_sequences">Generations</label>
+        <input type="number" id="num_return_sequences" value="2" min="1" max="5">
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label for="temperature">Creativity Level</label>
+      <input type="number" id="temperature" step="0.01" value="0.7" min="0.1" max="1.5">
+    </div>
+    
+    <button class="generate-btn" id="generateBtn">
+      <span id="btnText">Generate Stories</span>
+    </button>
+    
+    <div class="output" id="output">
+      <div class="placeholder-text">
+        ✨ Your AI-generated stories will appear here
+      </div>
+    </div>
   </div>
+  
   <div class="footer">
-    Powered by Netlify &middot; Flask API Demo
+    Powered by Advanced AI • Creative Storytelling Platform
   </div>
+  
   <script>
+    // Create animated background particles
+    function createParticles() {
+      const particlesContainer = document.getElementById('particles');
+      const particleCount = 50;
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.top = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 6 + 's';
+        particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+        particlesContainer.appendChild(particle);
+      }
+    }
+    
+    createParticles();
+    
     const endpoint = 'https://jun-market-inbox-created.trycloudflare.com/generate';
     const btn = document.getElementById('generateBtn');
+    const btnText = document.getElementById('btnText');
     const outputDiv = document.getElementById('output');
-
+    
     btn.onclick = async () => {
-      outputDiv.textContent = "⏳ Generating...";
+      btn.disabled = true;
+      btnText.textContent = 'Generating...';
+      
+      outputDiv.innerHTML = '<div class="loading">🤖 AI is crafting your stories...</div>';
+      
       const prompt = document.getElementById('prompt').value;
       const max_length = parseInt(document.getElementById('max_length').value, 10);
       const num_return_sequences = parseInt(document.getElementById('num_return_sequences').value, 10);
       const temperature = parseFloat(document.getElementById('temperature').value);
-
+      
       try {
         const response = await fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ prompt, max_length, num_return_sequences, temperature })
         });
+        
         const data = await response.json();
+        
         if (data.generations && data.generations.length > 0) {
-          outputDiv.innerHTML = data.generations.map(
-            (g, i) => `<div class="gen-block"><b>Generation ${i+1}:</b><br>${g.replace(/\n/g, "<br>")}</div>`
-          ).join('');
+          outputDiv.innerHTML = data.generations.map((g, i) => `
+            <div class="gen-block">
+              <div class="gen-title">Story ${i + 1}</div>
+              <div class="gen-text">${g.replace(/\n/g, "<br>")}</div>
+            </div>
+          `).join('');
         } else {
-          outputDiv.textContent = "No output from model!";
+          outputDiv.innerHTML = '<div class="error">❌ No stories generated. Please try again with different parameters.</div>';
         }
       } catch (err) {
-        outputDiv.textContent = "❌ Error: " + (err.message || err);
+        outputDiv.innerHTML = `<div class="error">❌ Connection error: ${err.message || 'Please check your internet connection and try again.'}</div>`;
+      } finally {
+        btn.disabled = false;
+        btnText.textContent = 'Generate Stories';
       }
     };
+    
+    // Add smooth focus animations
+    document.querySelectorAll('input, textarea').forEach(input => {
+      input.addEventListener('focus', (e) => {
+        e.target.style.transform = 'translateY(-2px)';
+      });
+      
+      input.addEventListener('blur', (e) => {
+        e.target.style.transform = 'translateY(0)';
+      });
+    });
   </script>
 </body>
 </html>
