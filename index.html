@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Story Generator Demo</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f6f6fa;
+      padding: 0;
+      margin: 0;
+    }
+    .container {
+      max-width: 420px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 2rem 2.5rem 2.5rem 2.5rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px #0002;
+    }
+    h1 { font-size: 1.5rem; margin-bottom: 0.8rem; }
+    textarea, input, button {
+      font-size: 1rem;
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 1rem;
+    }
+    textarea { min-height: 3rem; resize: vertical; }
+    button {
+      padding: 0.5rem;
+      background: #2076d0;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.15s;
+    }
+    button:active { background: #12529c; }
+    .output {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: #f3f7fc;
+      border-radius: 10px;
+      min-height: 2rem;
+      white-space: pre-line;
+    }
+    .gen-block {
+      margin-bottom: 1.2em;
+      border-left: 4px solid #2076d0;
+      padding-left: 0.8em;
+      background: #f8fbff;
+      border-radius: 4px;
+    }
+    .footer {
+      font-size: 0.97rem;
+      color: #888;
+      margin-top: 2em;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Story Generator</h1>
+    <label for="prompt">Prompt:</label>
+    <textarea id="prompt" placeholder="Enter your story prompt...">Once upon a time</textarea>
+
+    <label for="max_length">Max Length:</label>
+    <input type="number" id="max_length" value="50" min="1" max="2048">
+
+    <label for="num_return_sequences">Number of Generations:</label>
+    <input type="number" id="num_return_sequences" value="2" min="1" max="5">
+
+    <label for="temperature">Temperature:</label>
+    <input type="number" id="temperature" step="0.01" value="0.7" min="0.1" max="1.5">
+
+    <button id="generateBtn">Generate</button>
+
+    <div class="output" id="output">Model generations will appear here...</div>
+  </div>
+  <div class="footer">
+    Powered by Netlify &middot; Flask API Demo
+  </div>
+  <script>
+    const endpoint = 'https://variance-conferences-nasa-asbestos.trycloudflare.com/generate';
+    const btn = document.getElementById('generateBtn');
+    const outputDiv = document.getElementById('output');
+
+    btn.onclick = async () => {
+      outputDiv.textContent = "⏳ Generating...";
+      const prompt = document.getElementById('prompt').value;
+      const max_length = parseInt(document.getElementById('max_length').value, 10);
+      const num_return_sequences = parseInt(document.getElementById('num_return_sequences').value, 10);
+      const temperature = parseFloat(document.getElementById('temperature').value);
+
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt, max_length, num_return_sequences, temperature })
+        });
+        const data = await response.json();
+        if (data.generations && data.generations.length > 0) {
+          outputDiv.innerHTML = data.generations.map(
+            (g, i) => `<div class="gen-block"><b>Generation ${i+1}:</b><br>${g.replace(/\n/g, "<br>")}</div>`
+          ).join('');
+        } else {
+          outputDiv.textContent = "No output from model!";
+        }
+      } catch (err) {
+        outputDiv.textContent = "❌ Error: " + (err.message || err);
+      }
+    };
+  </script>
+</body>
+</html>
