@@ -46,18 +46,43 @@
     }
     
     .container {
-      max-width: 520px;
+      max-width: 1200px;
       margin: 0 auto;
+      position: relative;
+      z-index: 1;
+      transform: translateY(20px);
+      animation: slideUp 0.8s ease-out forwards;
+    }
+    
+    .main-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      min-height: 80vh;
+    }
+    
+    .input-panel {
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(20px);
       border-radius: 24px;
       padding: 3rem 2.5rem;
       box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
       border: 1px solid rgba(255, 255, 255, 0.2);
-      position: relative;
-      z-index: 1;
-      transform: translateY(20px);
-      animation: slideUp 0.8s ease-out forwards;
+      height: fit-content;
+      position: sticky;
+      top: 20px;
+    }
+    
+    .output-panel {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 3rem 2.5rem;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      min-height: 400px;
+      display: flex;
+      flex-direction: column;
     }
     
     @keyframes slideUp {
@@ -192,10 +217,40 @@
       background: linear-gradient(135deg, #f8fafc, #e2e8f0);
       border-radius: 16px;
       padding: 1.5rem;
-      min-height: 100px;
+      min-height: 200px;
       border: 1px solid rgba(226, 232, 240, 0.8);
       position: relative;
       overflow: hidden;
+      flex: 1;
+      overflow-y: auto;
+      max-height: 70vh;
+    }
+    
+    .output-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid rgba(102, 126, 234, 0.1);
+    }
+    
+    .output-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #374151;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .stories-count {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
     }
     
     .loading {
@@ -214,13 +269,23 @@
     
     .gen-block {
       margin-bottom: 1.5rem;
-      padding: 1.25rem;
+      padding: 1.5rem;
       background: rgba(255, 255, 255, 0.9);
       border-radius: 12px;
       border-left: 4px solid #667eea;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
       animation: fadeInUp 0.6s ease-out;
       position: relative;
+      transition: all 0.3s ease;
+    }
+    
+    .gen-block:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .gen-block:last-child {
+      margin-bottom: 0;
     }
     
     @keyframes fadeInUp {
@@ -286,9 +351,28 @@
     }
     
     /* Responsive design */
+    @media (max-width: 1024px) {
+      .main-content {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+      
+      .input-panel {
+        position: static;
+      }
+      
+      .output {
+        max-height: 50vh;
+      }
+    }
+    
     @media (max-width: 640px) {
       .container {
         margin: 10px;
+      }
+      
+      .input-panel,
+      .output-panel {
         padding: 2rem 1.5rem;
       }
       
@@ -298,6 +382,10 @@
       
       .controls-grid {
         grid-template-columns: 1fr;
+      }
+      
+      .output {
+        max-height: 40vh;
       }
     }
     
@@ -317,40 +405,55 @@
   <div class="bg-particles" id="particles"></div>
   
   <div class="container">
-    <div class="header">
-      <h1>AI Story Generator</h1>
-      <p class="subtitle">Create compelling narratives with artificial intelligence</p>
-    </div>
-    
-    <div class="form-group">
-      <label for="prompt">Story Prompt</label>
-      <textarea id="prompt" placeholder="Enter your creative prompt... (e.g., 'In a world where dreams become reality...')">Once upon a time</textarea>
-    </div>
-    
-    <div class="controls-grid">
-      <div class="control-item">
-        <label for="max_length">Max Length</label>
-        <input type="number" id="max_length" value="50" min="1" max="2048">
+    <div class="main-content">
+      <div class="input-panel">
+        <div class="header">
+          <h1>AI Story Generator</h1>
+          <p class="subtitle">Create compelling narratives with artificial intelligence</p>
+        </div>
+        
+        <div class="form-group">
+          <label for="prompt">Story Prompt</label>
+          <textarea id="prompt" placeholder="Enter your creative prompt... (e.g., 'In a world where dreams become reality...')">Once upon a time</textarea>
+        </div>
+        
+        <div class="controls-grid">
+          <div class="control-item">
+            <label for="max_length">Max Length</label>
+            <input type="number" id="max_length" value="50" min="1" max="2048">
+          </div>
+          
+          <div class="control-item">
+            <label for="num_return_sequences">Generations</label>
+            <input type="number" id="num_return_sequences" value="2" min="1" max="5">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="temperature">Creativity Level</label>
+          <input type="number" id="temperature" step="0.01" value="0.7" min="0.1" max="1.5">
+        </div>
+        
+        <button class="generate-btn" id="generateBtn">
+          <span id="btnText">Generate Stories</span>
+        </button>
       </div>
       
-      <div class="control-item">
-        <label for="num_return_sequences">Generations</label>
-        <input type="number" id="num_return_sequences" value="2" min="1" max="5">
-      </div>
-    </div>
-    
-    <div class="form-group">
-      <label for="temperature">Creativity Level</label>
-      <input type="number" id="temperature" step="0.01" value="0.7" min="0.1" max="1.5">
-    </div>
-    
-    <button class="generate-btn" id="generateBtn">
-      <span id="btnText">Generate Stories</span>
-    </button>
-    
-    <div class="output" id="output">
-      <div class="placeholder-text">
-        ✨ Your AI-generated stories will appear here
+      <div class="output-panel">
+        <div class="output-header">
+          <div class="output-title">
+            📚 Generated Stories
+          </div>
+          <div class="stories-count" id="storiesCount" style="display: none;">
+            0 stories
+          </div>
+        </div>
+        
+        <div class="output" id="output">
+          <div class="placeholder-text">
+            ✨ Your AI-generated stories will appear here
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -382,10 +485,12 @@
     const btn = document.getElementById('generateBtn');
     const btnText = document.getElementById('btnText');
     const outputDiv = document.getElementById('output');
+    const storiesCount = document.getElementById('storiesCount');
     
     btn.onclick = async () => {
       btn.disabled = true;
       btnText.textContent = 'Generating...';
+      storiesCount.style.display = 'none';
       
       outputDiv.innerHTML = '<div class="loading">🤖 AI is crafting your stories...</div>';
       
@@ -410,6 +515,10 @@
               <div class="gen-text">${g.replace(/\n/g, "<br>")}</div>
             </div>
           `).join('');
+          
+          // Update stories count
+          storiesCount.textContent = `${data.generations.length} ${data.generations.length === 1 ? 'story' : 'stories'}`;
+          storiesCount.style.display = 'block';
         } else {
           outputDiv.innerHTML = '<div class="error">❌ No stories generated. Please try again with different parameters.</div>';
         }
